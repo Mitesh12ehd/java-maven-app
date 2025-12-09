@@ -3,6 +3,9 @@ FROM amazoncorretto:8-alpine3.20-jre
 
 EXPOSE 8080
 
+# Create directory
+RUN mkdir -p /usr/app
+
 COPY ./target/java-maven-app-*.jar /usr/app
 WORKDIR /usr/app
 
