@@ -1,5 +1,5 @@
 pipeline{
-    agents any  // agents - where to execute
+    agent any  // agents - where to execute
                 // agent can be node, executor on node
 
     // stages is where work happens
