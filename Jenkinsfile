@@ -12,7 +12,7 @@ pipeline{
                 }
             }
             steps{
-                echo "Building application"
+                echo "Building application ${VERSION}"
             } 
         }
         stage("test"){
