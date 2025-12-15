@@ -1,53 +1,49 @@
-def gv
-
 pipeline{
     agent any
-    parameters{
-        choice(name: 'VERSION', choices: ['1.1.0', '1.2.0', '1.3.0'], description: '')
-        booleanParam(name: 'executeTests', defaultValue: true, description: '')
+    tools{
+        maven "maven-3.9    "
     }
     stages{
-        stage("init"){
+        stage("build jar"){
             steps{
-                script{
-                    gv = load "script.groovy"
-                }
+                    script{
+                        echo "building the application..."
+                        sh "mvn package"
+                    }
             }
         }
-        stage("build"){
+        stage("build image"){
             steps{
-                script{
-                    gv.buildApp();
-                }
-            } 
-        }
-        stage("test"){
-            when{
-                expression{
-                    params.executeTests
-                }
-            }
-            steps{
-                script{
-                    gv.testApp();
-                }
+                    script{
+                        echo "building the docker image..."
+                        // extract username and password from credential that we have added in GUI
+                        withCredentials([
+                            usernamePassword(
+                                credentialsId: 'docker-hub-repo',
+                                usernameVariable: 'USER',
+                                passwordVariable: 'PASS'
+                            )
+                        ]){
+                            // inside this block we have access to USER and PASS variable
+
+                            // build image
+                            sh "docker build -t miteshch/java-maven-app:2.0 ."
+
+                            // login into docker, taking password from input as it become masked
+                            sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
+
+                            // push image
+                            sh "docker push miteshch/java-maven-app:2.0"
+                        }
+                    }
             }
         }
         stage("deploy"){
-            input{
-                message "Select the environment to deploy to"
-                ok "Done"
-                parameters{
-                    choice(name: 'ENV', choices: ['dev','staging','production'], description:'')
-                }
-            }
             steps{
                 script{
-                    gv.deployApp();
-                    echo "Deploying to ${ENV}"
-                    // input parameter accessed without params.ENV
+                    echo "deploying the application..."
                 }
             }
         }
     }
-}  
+}
