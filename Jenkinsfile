@@ -27,7 +27,7 @@ pipeline{
                             // inside this block we have access to USER and PASS variable
 
                             // build image
-                            sh "docker build -t miteshch/java-maven-app:2.0 ."
+                            sh "docker build -t miteshch/demo-app:jma-2.0 ."
 
                             // login into docker, taking password from input as it become masked
                             sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
