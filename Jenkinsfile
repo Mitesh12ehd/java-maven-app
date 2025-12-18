@@ -1,30 +1,36 @@
+#!/user/bin/env groovy
+
+// Import library
+// Give same name as we have given in jenkins GUI
+@Library("jenkins-shared-library")_
+// Put underscore after Library, it tell jenkins to import this library then run further code.
+// It is mandatory to put _ in declarative syntax, to put _ after Library
+
+
 pipeline{
     agent any
+    tools{
+        maven "maven-3.9"
+    }
     stages{
-        stage("test"){
+        stage("build jar"){
             steps{
-                script{
-                    echo "Testing the application..."
-                    echo "Execution pipeline for branch ${BRANCH_NAME}"
-                }
+                    script{
+                        buildJar();
+                    }
             }
         }
-        stage("build"){
-            when{
-                expression{
-                    BRANCH_NAME == "main"
-                }
-            }
+        stage("build image"){
             steps{
                 script{
-                    echo "Building the application..."
+                    buildImage();   
                 }
             }
         }
         stage("deploy"){
             steps{
                 script{
-                    echo "Deploying the application..."
+                    echo "deploying the application..."
                 }
             }
         }
