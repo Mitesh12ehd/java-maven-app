@@ -1,11 +1,15 @@
 #!/user/bin/env groovy
 
 // Import library
-// Give same name as we have given in jenkins GUI
-@Library("jenkins-shared-library")_
-// Put underscore after Library, it tell jenkins to import this library then run further code.
-// It is mandatory to put _ in declarative syntax, to put _ after Library
 
+// identifier: library_name@tag : tag can be branch name or commit hash
+
+library identifier: "jenkins-shared-library@main", 
+        retriever: modernSCM([
+            $class: "GitSCMSource", 
+            remote: "https://github.com/Mitesh12ehd/jenkins-shared-library.git",
+            credentialsId: "github-credential"
+        ])
 
 pipeline{
     agent any
