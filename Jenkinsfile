@@ -15,15 +15,15 @@ pipeline{
     stages{
         stage("build jar"){
             steps{
-                    script{
-                        buildJar();
-                    }
+                script{
+                    buildJar();
+                }
             }
         }
         stage("build image"){
             steps{
                 script{
-                    buildImage();   
+                    buildImage "miteshch/demo-app:jma-3.0";   
                 }
             }
         }
