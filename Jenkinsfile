@@ -58,5 +58,34 @@ pipeline{
                 }
             }
         }
+
+        stage("Commit version update"){
+            steps{
+                script{
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'github-credential',
+                            usernameVariable: 'USER',
+                            passwordVariable: 'PASS'
+                        )
+                    ]){ 
+                        // set configuration of user that commit the changes
+                        sh 'git config --global user.email "jenkins@example.com"'
+                        sh 'git config --global user.name "jenkins"'
+
+                        // for printing information
+                        sh "git status"
+                        sh "git branch"
+                        sh "git config --list"
+
+                        // to commit new version
+                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/Mitesh12ehd/java-maven-app.git"
+                        sh "git add ."
+                        sh 'git commit -m "Jenkins: Application version update"'
+                        sh "git push origin HEAD:jenkins-practice"
+                    }
+                }
+            }
+        }
     }
 }
