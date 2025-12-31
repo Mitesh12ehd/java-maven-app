@@ -10,7 +10,7 @@ library identifier: "jenkins-shared-library@main",
             remote: "https://github.com/Mitesh12ehd/jenkins-shared-library.git",
             credentialsId: "github-credential"
         ])
-    
+
 pipeline{
     agent any
     tools{
@@ -30,7 +30,7 @@ pipeline{
         stage("build image"){
             steps{
                 script{
-                    buildImage "miteshch/demo-app:jma-3.0";   
+                    buildImage "${IMAGE_NAME}";   
                 }
             }
         }
