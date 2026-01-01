@@ -38,12 +38,14 @@ pipeline{
             steps{
                 script{ 
                     echo "Deploying docker image to EC2..."
-                    def dockerCommand = "docker-compose -f docker-compose.yaml up --detach"
+                    def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
                     sshagent(['ec2-server-key']) {
-                        // Print docker compose file into working directory of EC2
+                        // Copy docker compose and shell file on EC2
                         sh "scp docker-compose.yaml ec2-user@13.201.190.56:/home/ec2-user"
+                        sh "scp server-cmds.sh ec2-user@13.201.190.56:/home/ec2-user"
+
                         // -o flag to avoid popup that ask for yes when we connect using ssh
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@13.201.190.56 ${dockerCommand}"
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@13.201.190.56 ${shellCmd} "
                     }
                 }
             }

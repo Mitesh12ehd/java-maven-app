@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   java-maven-app:
-    image: miteshch/demo-app:java-maven-1.0
+    image: {IMAGE_NAME}
     ports:
       - 8080:8080
   postgres:
