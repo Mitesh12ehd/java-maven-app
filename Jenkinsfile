@@ -38,7 +38,7 @@ pipeline{
             steps{
                 script{ 
                     echo "Deploying docker image to EC2..."
-                    def dockerCommand = "docker compose -f docker-compose.yaml up --detach"
+                    def dockerCommand = "docker-compose -f docker-compose.yaml up --detach"
                     sshagent(['ec2-server-key']) {
                         // Print docker compose file into working directory of EC2
                         sh "scp docker-compose.yaml ec2-user@13.201.190.56:/home/ec2-user"
