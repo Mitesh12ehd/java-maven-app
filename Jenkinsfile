@@ -31,7 +31,7 @@ pipeline{
                     def version = matcher[0][1]
 
                     // BUILD_NUMBER variable is provide by jenkins, appending it to make unique image name each time
-                    env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
+                    env.IMAGE_NAME = "miteshch/demo-app:${version}-${BUILD_NUMBER}"
                 }
             }
         }
