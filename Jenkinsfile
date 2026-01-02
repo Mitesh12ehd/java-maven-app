@@ -16,10 +16,25 @@ pipeline{
     tools{
         maven "maven-3.9"
     }
-    environment{
-        IMAGE_NAME = "miteshch/demo-app:java-maven-1.0"
-    }
     stages{
+        stage("increment version"){
+            steps{
+                script{
+                    echo "Incrementing app version"
+                    sh "mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} versions:commit"
+                    
+                    // Store version in IMAGE_NAME variable
+                    def matcher = readFile("pom.xml") =~ "<version>(.+)</version>"
+
+                    // matcher[0] is first full match
+                    // matcher[0][1] is value inside (.+)
+                    def version = matcher[0][1]
+
+                    // BUILD_NUMBER variable is provide by jenkins, appending it to make unique image name each time
+                    env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
+                }
+            }
+        }
         stage("build jar"){
             steps{
                 script{
