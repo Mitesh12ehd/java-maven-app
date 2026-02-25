@@ -5,6 +5,10 @@ pipeline{
     tools{
         maven "maven-3.9"
     }
+    environment{
+        DOCKER_REPO_SERVER = "372641111498.dkr.ecr.ap-south-1.amazonaws.com"
+        DOCKER_REPO = "372641111498.dkr.ecr.ap-south-1.amazonaws.com/java-maven-app"
+    }
     stages{
         stage("increment version"){
             steps{
@@ -39,14 +43,14 @@ pipeline{
 
                     withCredentials([
                         usernamePassword(
-                            credentialsId: 'docker-hub-repo',
+                            credentialsId: 'ecr_credential',
                             usernameVariable: 'USER',
                             passwordVariable: 'PASS'
                         )
                     ]){
-                        sh "docker build -t miteshch/demo-app:${IMAGE_NAME} ."
-                        sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
-                        sh "docker push miteshch/demo-app:${IMAGE_NAME}"
+                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_NAME} ."
+                        sh "echo ${PASS} | docker login -u ${USER} --password-stdin ${DOCKER_REPO_SERVER}"
+                        sh "docker push ${DOCKER_REPO}:${IMAGE_NAME}"
                     }
                 }
             }

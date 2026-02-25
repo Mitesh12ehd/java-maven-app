@@ -1,41 +1,20 @@
-Complete CI/CD:
+ECR:
+    check java-maven-app jenkins-practice branch
 
-    Increment version > Build app > Build image and push to repo > Deploy to K8s cluster 
-    > Commit version update
+1. Create ecr credential in jenkins:
+    type: username with password
+    username: AWS
+    password: output of aws ecr get-login-password --region ap-south-1 
 
-    - check Project java-maven-app jenkins-practice branch
-
-Deploy:
-    - when new version updates, we need to create new deployment and service
-    - create deployment and service yaml file
-
-    Image version:
-        - we are using new docker image every time pipeline runs
-
-How to pass environment variable from our Jenkins file to K8s configuration file:
-    - envsubst tool
-    - we need to install inside jenkins container
-
-    Install tool envsubst:
-        - enter as root user inside container
-        - apt-get install gettext-base
-        - envsubst subset is tool that is present inside gettext-base
-
-        - sh "envsubst < kubernetes/deployment.yaml | kubectl apply -f -"
-          sh "envsubst < kubernetes/service.yaml | kubectl apply -f -"
-
-    - it replace all the environment variable with its value
+2. Create secret for AWS ECR:
+    - to pull image from ECR repo
+    - repository url can be found from AWS UI.
     
-
-Fetch image:
-    - k8s cluster must allow to fetch the image from docker repository
-    
-    Configure docker hub credential:
-        - use Secret
-        - Create secret in eks cluster only once
-        - it doesn't create every time pipeline runs
-        
-        kubectl create secret docker-registry my-registry-key \
-        --docker-server=docker.io \
-        --docker-username=miteshch \
+    kubectl create secret docker-registry aws-registry-key \
+        --docker-server=372641111498.dkr.ecr.ap-south-1.amazonaws.com \
+        --docker-username=AWS \
         --docker-password=xyz
+
+3. Update jenkins file:
+    - build image 
+    - to tag image use URI of ecr repo
