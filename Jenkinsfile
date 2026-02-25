@@ -52,13 +52,19 @@ pipeline{
             }
         }
         stage("deploy"){
+            environment{
+                AWS_ACCESS_KEY_ID = credentials("jenkins_access_key_id")
+                AWS_SECRET_ACCESS_KEY = credentials("jenkine_aws_secret_access_key")
+                APP_NAME = "java-maven-app"
+            }
             steps{
                 script{
-                    echo "Deploying the application...."
+                    echo "Deploying the docker image..."
+                    sh "envsubst < kubernetes/deployment.yaml | kubectl apply -f -"
+                    sh "envsubst < kubernetes/service.yaml | kubectl apply -f -"
                 }
             }
         }
-
         stage("Commit version update"){
             steps{
                 script{
