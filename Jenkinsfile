@@ -70,7 +70,7 @@ pipeline{
                 script{
                     withCredentials([
                         usernamePassword(
-                            credentialsId: 'github-credential',
+                            credentialsId: 'github-cred',
                             usernameVariable: 'USER',
                             passwordVariable: 'PASS'
                         )
