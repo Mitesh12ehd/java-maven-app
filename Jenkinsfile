@@ -85,7 +85,7 @@ pipeline{
                     def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME} ${DOCKER_CREDS_USR} ${DOCKER_CREDS_PSW}"
                     def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
 
-                    sshagent(['ec2-server-key']) {
+                    sshagent(['server-ssh-key']) {
                         // Copy docker compose and shell file on EC2
                         sh "scp docker-compose.yaml ${ec2Instance}:/home/ec2-user"
                         sh "scp server-cmds.sh ${ec2Instance}:/home/ec2-user"
