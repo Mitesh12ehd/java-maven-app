@@ -49,21 +49,52 @@ pipeline{
                 }
             }
         }
-        // stage("deploy"){
-        //     steps{
-        //         script{ 
-        //             echo "Deploying docker image to EC2..."
-        //             def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
-        //             sshagent(['ec2-server-key']) {
-        //                 // Copy docker compose and shell file on EC2
-        //                 sh "scp docker-compose.yaml ec2-user@13.201.190.56:/home/ec2-user"
-        //                 sh "scp server-cmds.sh ec2-user@13.201.190.56:/home/ec2-user"
+        stage("provision server"){
+            environment{
+                AWS_ACCESS_KEY_ID = credential("aws_access_key_id")
+                AWS_SECRET_ACCESS_KEY = credential("aws_secret_access_key")
 
-        //                 // -o flag to avoid popup that ask for yes when we connect using ssh
-        //                 sh "ssh -o StrictHostKeyChecking=no ec2-user@13.201.190.56 ${shellCmd} "
-        //             }
-        //         }
-        //     }
-        // }
+                // to provide value of variable in terraform
+                TF_VAR_env_prefix = "test"
+            }
+            steps{
+                script{
+                    dir("terraform"){
+                        sh "terraform init"
+                        sh "terraform apply --auto-approve"
+                        EC2_PUBLIC_IP = sh (
+                            script: "terraform output ec2-instance-public-ip"
+                            returnStdout: true
+                        ).trim()
+                    }
+                }
+            }
+        }
+        stage("deploy"){
+            environment{
+                DOCKER_CREDS = credential("docker-hub-repo")
+                // using this by default we get 
+                // DOCKER_CREDS_USR and DOCKER_CREDS_PSW
+            }
+            steps{
+                script{ 
+                    // wait to become ec2 instance runninge
+                    sleep(time: 90, unit: "SECONDS")
+                    echo "Deploying docker image to EC2..."
+
+                    def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME} ${DOCKER_CREDS_USR} ${DOCKER_CREDS_PSW}"
+                    def ec2Instance = "ec2-user@${EC2_PUBLIC_IP}"
+
+                    sshagent(['ec2-server-key']) {
+                        // Copy docker compose and shell file on EC2
+                        sh "scp docker-compose.yaml ${ec2Instance}:/home/ec2-user"
+                        sh "scp server-cmds.sh ${ec2Instance}:/home/ec2-user"
+
+                        // -o flag to avoid popup that ask for yes when we connect using ssh
+                        sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd} "
+                    }
+                }
+            }
+        }
     }
 }
