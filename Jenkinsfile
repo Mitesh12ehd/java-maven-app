@@ -1,5 +1,16 @@
 #!/user/bin/env groovy
 
+// Import library
+
+// identifier: library_name@tag : tag can be branch name or commit hash
+
+library identifier: "jenkins-shared-library@main", 
+        retriever: modernSCM([
+            $class: "GitSCMSource", 
+            remote: "https://github.com/Mitesh12ehd/jenkins-shared-library.git",
+            credentialsId: "github-credential"
+        ])
+
 pipeline{
     agent any
     tools{
@@ -20,78 +31,39 @@ pipeline{
                     def version = matcher[0][1]
 
                     // BUILD_NUMBER variable is provide by jenkins, appending it to make unique image name each time
-                    env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
+                    env.IMAGE_NAME = "miteshch/demo-app:${version}-${BUILD_NUMBER}"
                 }
             }
         }
-        stage("build app"){
+        stage("build jar"){
             steps{
                 script{
-                    echo "Building the application..."
-                    sh "mvn clean package"
+                    buildJar();
                 }
             }
         }
         stage("build image"){
             steps{
                 script{
-                    echo "Building the docker image..."
-
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'docker-hub-repo',
-                            usernameVariable: 'USER',
-                            passwordVariable: 'PASS'
-                        )
-                    ]){
-                        sh "docker build -t miteshch/demo-app:${IMAGE_NAME} ."
-                        sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
-                        sh "docker push miteshch/demo-app:${IMAGE_NAME}"
-                    }
+                    buildImage "${IMAGE_NAME}";   
                 }
             }
         }
-        stage("deploy"){
-            environment{
-                AWS_ACCESS_KEY_ID = credentials("jenkins_access_key_id")
-                AWS_SECRET_ACCESS_KEY = credentials("jenkine_aws_secret_access_key")
-                APP_NAME = "java-maven-app"
-            }
-            steps{
-                script{
-                    echo "Deploying the docker image..."
-                    sh "envsubst < kubernetes/deployment.yaml | kubectl apply -f -"
-                    sh "envsubst < kubernetes/service.yaml | kubectl apply -f -"
-                }
-            }
-        }
-        stage("Commit version update"){
-            steps{
-                script{
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'github_cred',
-                            usernameVariable: 'USER',
-                            passwordVariable: 'PASS'
-                        )
-                    ]){ 
-                        // set configuration of user that commit the changes
-                        sh 'git config --global user.email "jenkins@example.com"'
-                        sh 'git config --global user.name "jenkins"'
+        // stage("deploy"){
+        //     steps{
+        //         script{ 
+        //             echo "Deploying docker image to EC2..."
+        //             def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
+        //             sshagent(['ec2-server-key']) {
+        //                 // Copy docker compose and shell file on EC2
+        //                 sh "scp docker-compose.yaml ec2-user@13.201.190.56:/home/ec2-user"
+        //                 sh "scp server-cmds.sh ec2-user@13.201.190.56:/home/ec2-user"
 
-                        // for printing information
-                        sh "git status"
-                        sh "git branch"
-                        sh "git config --list"
-
-                        // to commit new version
-                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/Mitesh12ehd/java-maven-app.git"
-                        sh "git add ."
-                        sh 'git commit -m "Jenkins: Application version update"'
-                        sh "git push origin HEAD:jenkins-practice"
-                    }
-                }
-            }
-        }
+        //                 // -o flag to avoid popup that ask for yes when we connect using ssh
+        //                 sh "ssh -o StrictHostKeyChecking=no ec2-user@13.201.190.56 ${shellCmd} "
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
