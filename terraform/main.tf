@@ -1,3 +1,10 @@
+terraform {
+    backend "s3" {
+        bucket = "myapp-miteshch-s3-bucket"
+        key = "myapp/state.tfstate" // folder myapp stores state.tfstate file
+    }
+}
+
 // region and access key pair taken from env directly
 provider "aws"{
     region = "ap-south-1"
