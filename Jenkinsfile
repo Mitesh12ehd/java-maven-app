@@ -51,8 +51,8 @@ pipeline{
         }
         stage("provision server"){
             environment{
-                AWS_ACCESS_KEY_ID = credential("aws_access_key_id")
-                AWS_SECRET_ACCESS_KEY = credential("aws_secret_access_key")
+                AWS_ACCESS_KEY_ID = credentials("aws_access_key_id")
+                AWS_SECRET_ACCESS_KEY = credentials("aws_secret_access_key")
 
                 // to provide value of variable in terraform
                 TF_VAR_env_prefix = "test"
@@ -72,7 +72,7 @@ pipeline{
         }
         stage("deploy"){
             environment{
-                DOCKER_CREDS = credential("docker-hub-repo")
+                DOCKER_CREDS = credentials("docker-hub-repo")
                 // using this by default we get 
                 // DOCKER_CREDS_USR and DOCKER_CREDS_PSW
             }
