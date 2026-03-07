@@ -2,6 +2,7 @@ terraform {
     backend "s3" {
         bucket = "myapp-miteshch-s3-bucket"
         key = "myapp/state.tfstate" // folder myapp stores state.tfstate file
+        region = "ap-south-1"
     }
 }
 
